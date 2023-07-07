@@ -10,20 +10,16 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
+    return Scaffold(
         appBar:AppBar(title: Text('Welcome', 
         style: TextStyle(
         fontSize: 24.0,), 
         ),
-        backgroundColor: Color.fromARGB(255, 14, 48, 74),
         ),
         body: Container(
           margin: EdgeInsets.only(left: 0.0),
           child: SingleChildScrollView(
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.start,
               children: [
                  SizedBox(height: 40.0,),
                 Text('Create Account ', style: 
@@ -32,16 +28,14 @@ class _SignUpState extends State<SignUp> {
                 Image(image:
                  AssetImage('Asset/Image/sign.jpg'),),
                 SizedBox(height: 29.0,),
-                ElevatedButton(onPressed: (){}, child: Text('Continue with Google'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 33, 62, 95)),),
-                SizedBox(height: 29.0,),
+                SizedBox(height: 25.0,),
                 Padding(
                padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                child: TextFormField(
                     decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                   hintText: 'Enter your name ',
+                  prefixIcon: Icon(Icons.person),
                   ), 
                ),
              ),
@@ -50,36 +44,39 @@ class _SignUpState extends State<SignUp> {
                padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                child: TextFormField(
                     decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                   hintText: 'Enter your email ',
+                  prefixIcon: Icon(Icons.email),
                   ), 
                ),
              ),
              SizedBox(height: 8.0,),
-                Padding(
+              Padding(
                padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                child: TextFormField(
                     decoration: InputDecoration(
-                    border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                   hintText: 'Enter your password ',
+                  prefixIcon: IconButton(
+                    icon: Icon(Icons.remove_red_eye),
+                    onPressed: null,),
+                    ),
                   ), 
                ),
-             ),
-             SizedBox(height: 20.0,),
-              Text('I agree to terms and conditions', style: TextStyle(fontSize: 18.0),),
-          
-            SizedBox(height: 35.0,),
-            ElevatedButton(onPressed: (){
-              Navigator.pushNamed(context, '/login');
-            }, child: Text(' BACK'), 
-            style: ElevatedButton.styleFrom(
-            backgroundColor: Color.fromARGB(255, 33, 62, 95)),
-             ),
+             
+             SizedBox(height: 28.0,),
+             ElevatedButton(onPressed: (){
+               Navigator.pushNamed(context, '/home');
+             },
+              child: Text('Sign-Up', 
+              style: TextStyle(fontSize: 18.0),),
+              style: ButtonStyle(backgroundColor: 
+              MaterialStatePropertyAll(const Color.fromARGB(255, 31, 88, 135),),),
+              ),
               ],
             ),
           ),
         ),
-        ),
-    );
+        );
   }
 }
