@@ -32,6 +32,7 @@ class _SignUpState extends State<SignUp> {
                 Padding(
                padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                child: TextFormField(
+                keyboardType: TextInputType.name,
                     decoration: InputDecoration(
                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                   hintText: 'Enter your name ',
@@ -43,6 +44,7 @@ class _SignUpState extends State<SignUp> {
                 Padding(
                padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                child: TextFormField(
+                keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                   hintText: 'Enter your email ',
@@ -54,6 +56,7 @@ class _SignUpState extends State<SignUp> {
               Padding(
                padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                child: TextFormField(
+                keyboardType: TextInputType.visiblePassword,
                     decoration: InputDecoration(
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                   hintText: 'Enter your password ',

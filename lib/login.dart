@@ -40,6 +40,7 @@ class _LoginState extends State<Login> {
                 Container(
                   padding: EdgeInsets.only(right: 10.0, left: 10.0),
                   child: const TextField(
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.person),
                       hintText: 'Enter your email or username',
@@ -52,6 +53,7 @@ class _LoginState extends State<Login> {
                 Container(
                   padding: EdgeInsets.only(right: 10.0, left: 10.0),
                   child: const TextField(
+                    keyboardType:TextInputType.visiblePassword ,
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
                       labelText: 'Password',

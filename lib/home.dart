@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/constants.dart';
 import 'package:date_time_picker/date_time_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
@@ -11,11 +12,16 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late DateTime selectedDateTime;
   final TextEditingController _taskController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   List<String> tasks = [];
+  final firestoreInstance = FirebaseFirestore.instance;
 
   @override
   void dispose() {
     _taskController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -41,6 +47,7 @@ class _HomeState extends State<Home> {
         child: Column(
           children: [
             TextField(
+              controller: _titleController, // Add the title controller
               style: hometext,
               decoration: InputDecoration(
                 focusedBorder: OutlineInputBorder(),
@@ -68,7 +75,7 @@ class _HomeState extends State<Home> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextField(
-                      controller: _taskController,
+                      controller: _descriptionController, // Add the description controller
                       decoration: InputDecoration(
                         labelText: 'Enter your tasks',
                       ),
@@ -79,11 +86,11 @@ class _HomeState extends State<Home> {
               ),
             ),
             ElevatedButton(
-                      onPressed: _addTask,
-                      child: Text('Add Task'),
-                    ),
-                      SizedBox(height: 20),
-            Expanded( 
+              onPressed: _addTask,
+              child: Text('Add Task'),
+            ),
+            SizedBox(height: 20),
+            Expanded(
               child: ListView.builder(
                 itemCount: tasks.length,
                 itemBuilder: (context, index) {
@@ -93,7 +100,18 @@ class _HomeState extends State<Home> {
                 },
               ),
             ),
-            
+            Expanded(
+              child: TextButton(
+                child: Icon(Icons.check),
+                onPressed: () {
+                  Map<String, dynamic> todoData = {
+                    'title': _titleController.text,
+                    'description': _descriptionController.text,
+                  };
+                  firestoreInstance.collection('todos').add(todoData);
+                },
+              ),
+            ),
           ],
         ),
       ),
