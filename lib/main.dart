@@ -41,6 +41,7 @@ class Todo extends StatelessWidget {
       theme: ThemeData(
         primaryColor: primaryColour,
         appBarTheme: AppBarTheme(color: primaryColour),
+       //scaffoldBackgroundColor: Color.fromARGB(255, 165, 153, 153),
       ),
     );
   }

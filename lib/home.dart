@@ -1,4 +1,4 @@
-// import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/constants.dart';
 import 'package:date_time_picker/date_time_picker.dart';
@@ -33,7 +33,6 @@ class _HomeState extends State<Home> {
     super.initState();
     dbref = FirebaseDatabase.instance.ref().child('todo');
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,7 +60,7 @@ class _HomeState extends State<Home> {
                 firstDate: DateTime.now(),
                 lastDate: DateTime(2100),
                 icon: const Icon(Icons.event),
-                dateLabelText: 'Date & Time',
+                dateLabelText: 'Date & Time',style: datetimetext,
                 onChanged: (val) {
                   setState(() {
                     selectedDateTime = DateTime.parse(val);
@@ -69,18 +68,26 @@ class _HomeState extends State<Home> {
                 },
               ),
               const SizedBox(height: 30.0,),
-              Container(
-                height: 120.0,
-                child: TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6.0),
-                    ),
-                    labelText: 'Description',
-                  ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color.fromARGB(255, 43, 36, 36),
+                  width: 1.0),
+                  borderRadius: BorderRadius.circular(10.0),
                 ),
-              ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    height: 120.0,
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Description',
+                        hintStyle: desctext,
+                      ),
+                    ),
+                  ),
+                ),),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
@@ -113,21 +120,50 @@ class _HomeState extends State<Home> {
                 ),
               ),
               const SizedBox(height: 8),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  Task task = tasks[index];
-                  return ListTile(
-                    title: Text('${task.title} - ${task.dateAndtime}'),
-                    subtitle: Text(task.description),
-                  );
-                },
-              ),
+            Container(
+  height: MediaQuery.of(context).size.height * 0.3, // Adjust the height as needed
+  width: MediaQuery.of(context).size.width, // Adjust the width as needed
+  child: ListView.builder(
+    itemCount: tasks.length,
+    itemBuilder: (context, index) {
+      Task task = tasks[index];
+      return ListTile(
+        title: Text('${task.title} - ${task.dateAndtime}'),
+        subtitle: Text(task.description),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              color: const Color.fromARGB(255, 30, 94, 206),
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                // Handle edit button pressed
+              },
+            ),
+            IconButton(
+              color: Color.fromARGB(255, 214, 31, 18),
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                // Handle delete button pressed
+              },
+            ),
+            IconButton(
+              color: const Color.fromARGB(255, 70, 197, 75),
+              icon: Icon(Icons.check),
+              onPressed: () {
+                // Handle complete button pressed
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  ),
+),
             ],
           ),
         ),
       ),
     );
   }
-}
+} 
