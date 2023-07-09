@@ -35,7 +35,6 @@ class Todo extends StatelessWidget {
         },
       ),
       routes: {
-        // Define your other routes here
         '/login': (context) => Login(),
         '/sign': (context) => SignUp(),
       },
