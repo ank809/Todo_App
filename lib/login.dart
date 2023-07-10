@@ -20,7 +20,7 @@ class _LoginState extends State<Login> {
             margin: EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Image(image: AssetImage('Asset/Image/login2.png'),
+                Image(image: AssetImage('Asset/Image/login.png'),
                 width: 400.0,
                 height: 300.0, ), 
                 SizedBox(height: 20.0,),

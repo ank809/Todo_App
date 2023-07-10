@@ -13,4 +13,14 @@ const hometext=  TextStyle(color: Color.fromARGB(255, 44, 38, 101),
  const titlestyle= TextStyle(
                  fontSize: 20,
               fontWeight: FontWeight.bold
-              );                                       
+              );    
+final mainbuttonlogin=ButtonStyle(backgroundColor: MaterialStatePropertyAll(Color.fromARGB(255, 224, 96, 27)),
+                        fixedSize: MaterialStateProperty.all(Size(120.0, 50)  )); 
+final  mainbuttonsignup= ButtonStyle(backgroundColor: MaterialStatePropertyAll(const Color.fromARGB(255, 59, 134, 255)),
+fixedSize: MaterialStateProperty.all(Size(120.0, 50)),
+);
+const logstyle= TextStyle(color: Colors.white70,
+                          fontSize: 16.0);
+ const signstyle=TextStyle(color: Colors.white70,
+                          fontSize: 16.0);
+                                  

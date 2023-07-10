@@ -1,7 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:todo_app/home.dart';
+import 'package:todo_app/mainScreen.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'package:todo_app/home.dart';
 import 'package:todo_app/signup.dart';
 import 'login.dart';
 const primaryColour=Color.fromARGB(255, 14, 48, 74);
@@ -27,7 +28,7 @@ class Todo extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // Firebase has been initialized, navigate to Home
-            return Home();
+            return const MainScreen();
           } else {
             // Show a loading indicator while Firebase is initializing
             return CircularProgressIndicator();
@@ -37,6 +38,7 @@ class Todo extends StatelessWidget {
       routes: {
         '/login': (context) => Login(),
         '/sign': (context) => SignUp(),
+        '/home':(context) => Home(),
       },
       theme: ThemeData(
         primaryColor: primaryColour,
