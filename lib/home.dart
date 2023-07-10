@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/constants.dart';
 import 'package:date_time_picker/date_time_picker.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'delete.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -27,22 +27,50 @@ class _HomeState extends State<Home> {
   final TextEditingController _dateandtimeController = TextEditingController();
   List<Task> tasks = [];
   late DatabaseReference dbref;
+  int editIndex = -1;
 
   @override
   void initState() {
     super.initState();
     dbref = FirebaseDatabase.instance.ref().child('todo');
   }
+
+  void clearFields() {
+    _titleController.clear();
+    _descriptionController.clear();
+    _dateandtimeController.clear();
+  }
+  void navigateToDeletePage(Task task) {
+    Navigator.push(
+     context,
+      MaterialPageRoute(
+        builder: (context) => DeletePage(
+          title: task.title,
+          description: task.description,
+          dateAndtime: task.dateAndtime,
+        ),
+      ),
+    ).then((restoredTask) {
+    if (restoredTask != null) {
+      setState(() {
+        tasks.add(restoredTask);
+      });
+    }
+  });
+    clearFields();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create your Todo list'),
       ),
-      body: Container(
-        margin: const EdgeInsets.all(25.0),
-        padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Container(
+          margin: const EdgeInsets.all(25.0),
+          padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
           child: Column(
             children: [
               TextField(
@@ -60,18 +88,21 @@ class _HomeState extends State<Home> {
                 firstDate: DateTime.now(),
                 lastDate: DateTime(2100),
                 icon: const Icon(Icons.event),
-                dateLabelText: 'Date & Time',style: datetimetext,
+                dateLabelText: 'Date & Time',
+                style: datetimetext,
                 onChanged: (val) {
                   setState(() {
                     selectedDateTime = DateTime.parse(val);
                   });
                 },
               ),
-              const SizedBox(height: 30.0,),
+              const SizedBox(height: 30.0),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color.fromARGB(255, 43, 36, 36),
-                  width: 1.0),
+                  border: Border.all(
+                    color: const Color.fromARGB(255, 43, 36, 36),
+                    width: 1.0,
+                  ),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: Padding(
@@ -80,90 +111,104 @@ class _HomeState extends State<Home> {
                     height: 120.0,
                     child: TextFormField(
                       controller: _descriptionController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: 'Description',
                         hintStyle: desctext,
                       ),
                     ),
                   ),
-                ),),
+                ),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Map<String, dynamic> todos = {
-                    'title': _titleController.text,
-                    'description': _descriptionController.text,
-                    'dateAndtime': _dateandtimeController.text,
-                  };
-                  dbref.push().set(todos);
-                  setState(() {
-                    tasks.add(Task(
-                      title: _titleController.text,
-                      description: _descriptionController.text,
-                      dateAndtime: _dateandtimeController.text,
-                    ));
-                    _titleController.clear();
-                    _descriptionController.clear();
-                    _dateandtimeController.clear();
-                  });
+                  if (editIndex != -1) {
+                    // Update an existing task
+                    setState(() {
+                      tasks[editIndex].title = _titleController.text;
+                      tasks[editIndex].description = _descriptionController.text;
+                      tasks[editIndex].dateAndtime = _dateandtimeController.text;
+                      editIndex = -1;
+                    });
+                    clearFields();
+                    // Update the task in the database
+                    Map<String, dynamic> todos = {
+                      'title': tasks[editIndex].title,
+                      'description': tasks[editIndex].description,
+                      'dateAndtime': tasks[editIndex].dateAndtime,
+                    };
+                    dbref.child(editIndex.toString()).update(todos);
+                    
+                    // Clear the fields
+                    clearFields();
+                  } else {
+                    // Create a new task
+                    setState(() {
+                      tasks.add(Task(
+                        title: _titleController.text,
+                        description: _descriptionController.text,
+                        dateAndtime: _dateandtimeController.text,
+                      ));
+                      clearFields();
+                    });
+                  }
                 },
-                child: Icon(Icons.check),
+                child: Text(editIndex != -1 ? 'Save Changes' : 'Create Task'),
               ),
-             const SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
                 alignment: Alignment.centerLeft,
                 child: const Text(
                   'Tasks:',
                   style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold,),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
-            Container(
-  height: MediaQuery.of(context).size.height * 0.3, // Adjust the height as needed
-  width: MediaQuery.of(context).size.width, // Adjust the width as needed
-  child: ListView.builder(
-    itemCount: tasks.length,
-    itemBuilder: (context, index) {
-      Task task = tasks[index];
-      return ListTile(
-        title: Text('${task.title} - ${task.dateAndtime}'),
-        subtitle: Text(task.description),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              color: const Color.fromARGB(255, 30, 94, 206),
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                // Handle edit button pressed
-              },
-            ),
-            IconButton(
-              color: Color.fromARGB(255, 214, 31, 18),
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                // Handle delete button pressed
-              },
-            ),
-            IconButton(
-              color: const Color.fromARGB(255, 70, 197, 75),
-              icon: Icon(Icons.check),
-              onPressed: () {
-                // Handle complete button pressed
-              },
-            ),
-          ],
-        ),
-      );
-    },
-  ),
-),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  Task task = tasks[index];
+                  return ListTile(
+                    title: Text('${task.title} - ${task.dateAndtime}'),
+                    subtitle: Text(task.description),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          color: const Color.fromARGB(255, 30, 94, 206),
+                          icon: Icon(Icons.edit),
+                          onPressed: () {
+                            setState(() {
+                              editIndex = index;
+                              _titleController.text = task.title;
+                              _descriptionController.text = task.description;
+                              _dateandtimeController.text = task.dateAndtime;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          color: Color.fromARGB(255, 214, 31, 18),
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                           navigateToDeletePage(task);
+                            clearFields();
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
       ),
     );
   }
-} 
+}
