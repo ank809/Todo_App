@@ -40,9 +40,10 @@ class _HomeState extends State<Home> {
     _descriptionController.clear();
     _dateandtimeController.clear();
   }
-  void navigateToDeletePage(Task task) {
-    Navigator.push(
-     context,
+ 
+  void navigateToDeletePage(Task task, int index) async {
+    final result = await Navigator.push(
+      context,
       MaterialPageRoute(
         builder: (context) => DeletePage(
           title: task.title,
@@ -50,13 +51,14 @@ class _HomeState extends State<Home> {
           dateAndtime: task.dateAndtime,
         ),
       ),
-    ).then((restoredTask) {
-    if (restoredTask != null) {
+    );
+
+    if (result == true) {
       setState(() {
-        tasks.add(restoredTask);
+        tasks.removeAt(index);
       });
     }
-  });
+
     clearFields();
   }
 
@@ -129,31 +131,37 @@ class _HomeState extends State<Home> {
                       tasks[editIndex].title = _titleController.text;
                       tasks[editIndex].description = _descriptionController.text;
                       tasks[editIndex].dateAndtime = _dateandtimeController.text;
+                      String taskKey = tasks[editIndex].toString();
+                      dbref.child(taskKey).update({
+                        'title': tasks[editIndex].title,
+                        'description': tasks[editIndex].description,
+                        'dateAndtime': tasks[editIndex].dateAndtime,
+                      });
                       editIndex = -1;
                     });
-                    clearFields();
-                    // Update the task in the database
-                    Map<String, dynamic> todos = {
-                      'title': tasks[editIndex].title,
-                      'description': tasks[editIndex].description,
-                      'dateAndtime': tasks[editIndex].dateAndtime,
-                    };
-                    dbref.child(editIndex.toString()).update(todos);
-                    
                     // Clear the fields
                     clearFields();
                   } else {
                     // Create a new task
                     setState(() {
-                      tasks.add(Task(
+                      Task newTask = Task(
                         title: _titleController.text,
                         description: _descriptionController.text,
                         dateAndtime: _dateandtimeController.text,
-                      ));
+                      );
+                      tasks.add(newTask);
+                      // Store the task in the database
+                      dbref.push().set({
+                        'title': newTask.title,
+                        'description': newTask.description,
+                        'dateAndtime': newTask.dateAndtime,
+                      });
+
                       clearFields();
                     });
-                  }
-                },
+                    };
+                  },
+                
                 child: Text(editIndex != -1 ? 'Save Changes' : 'Create Task'),
               ),
               const SizedBox(height: 16),
@@ -196,7 +204,7 @@ class _HomeState extends State<Home> {
                           color: Color.fromARGB(255, 214, 31, 18),
                           icon: Icon(Icons.delete),
                           onPressed: () {
-                           navigateToDeletePage(task);
+                           navigateToDeletePage(task, index);
                             clearFields();
                           },
                         ),
