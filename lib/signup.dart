@@ -11,7 +11,8 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   final emailController= TextEditingController();
   final passwordController= TextEditingController();
-   final nameController= TextEditingController();
+  final nameController= TextEditingController();
+  bool isPasswordvisible=false;
      @override
   void dispose(){
     emailController.clear();
@@ -77,13 +78,17 @@ class _SignUpState extends State<SignUp> {
                    padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                    child: TextFormField(
                     controller: passwordController,
-                    keyboardType: TextInputType.visiblePassword,
+                    obscureText: !isPasswordvisible,
                         decoration: InputDecoration(
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
                       hintText: 'Enter your password ',
                       prefixIcon: IconButton(
-                        icon: Icon(Icons.remove_red_eye),
-                        onPressed: null,),
+                        icon: Icon(isPasswordvisible? Icons.visibility : Icons.visibility_off,),
+                        onPressed: (){
+                          setState(() {
+                            isPasswordvisible=!isPasswordvisible;
+                          });
+                        },),
                         ),
                       ), 
                    ),
@@ -93,6 +98,7 @@ class _SignUpState extends State<SignUp> {
                    FirebaseAuth.instance.createUserWithEmailAndPassword(
                     email: emailController.text, 
                     password: passwordController.text);
+                    Navigator.pushNamed(context, '/home');
                     dispose();
                  },
                  

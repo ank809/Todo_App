@@ -23,6 +23,7 @@ dependencies:
   date_time_picker: ^2.0.0
   cloud_firestore: ^4.8.2
   firebase_database: ^10.2.3
+  google_sign_in: ^5.0.4
 
 dev_dependencies:
   flutter_test:

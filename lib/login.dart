@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:todo_app/home.dart';
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -11,12 +12,28 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final emailController= TextEditingController();
   final passwordController= TextEditingController();
+  bool isPasswordvisible=false;
     @override
   void dispose(){
     emailController.clear();
     passwordController.clear();
     super.dispose();
   }
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+Future<UserCredential> signInWithGoogle() async {
+  final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+
+  final OAuthCredential credential = GoogleAuthProvider.credential(
+    accessToken: googleAuth.accessToken,
+    idToken: googleAuth.idToken,
+  );
+
+  final UserCredential userCredential = await _auth.signInWithCredential(credential);
+  return userCredential;
+}
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -31,7 +48,6 @@ class _LoginState extends State<Login> {
                 style: TextStyle(fontSize: 25.0),
               ),
             ),
-            drawer: Drawer(backgroundColor: Color.fromARGB(255, 13, 64, 126)),
             body: SingleChildScrollView(
               child: Container(
                 margin: EdgeInsets.all(8.0),
@@ -72,12 +88,20 @@ class _LoginState extends State<Login> {
                       padding: EdgeInsets.only(right: 10.0, left: 10.0),
                       child:  TextField(
                         controller: passwordController,
-                        keyboardType:TextInputType.visiblePassword ,
+                        obscureText: !isPasswordvisible,
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           labelText: 'Password',
-                          prefixIcon: Icon(Icons.fingerprint),
-                          suffixIcon: IconButton(onPressed: null, icon:  Icon(Icons.remove_red_eye,),),
+                          prefixIcon: IconButton(
+                            onPressed: (){
+                              setState(() {
+                                isPasswordvisible=!isPasswordvisible;
+                              });
+                            }, 
+                          icon: Icon(
+                              isPasswordvisible ? Icons.visibility : Icons.visibility_off,
+                            ),
+                         ),
                           focusedBorder: OutlineInputBorder(),
                         ),
                       ),
@@ -102,7 +126,9 @@ class _LoginState extends State<Login> {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(300.0, 50.0),
                       ),
-                      onPressed: (){},
+                      onPressed: (){
+                        signInWithGoogle();
+                      },
                       icon: Image(image: AssetImage('Asset/Image/google.png'),width: 35.0,),
                       label: Text('Continue with Google',
                       style: TextStyle(fontSize: 20.0),
@@ -118,7 +144,9 @@ class _LoginState extends State<Login> {
                      FirebaseAuth.instance.signInWithEmailAndPassword(
                       email: emailController.text.trim(), 
                       password: passwordController.text.trim(),
+                     
                       );
+                       Navigator.pushNamed(context, '/home');
                       dispose();
                     }, 
                    child:Text('Login'.toUpperCase(),

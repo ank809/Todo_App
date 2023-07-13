@@ -1,10 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/constants.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'delete.dart';
+import 'package:todo_app/delete.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -26,7 +25,7 @@ class _HomeState extends State<Home> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateandtimeController = TextEditingController();
-  final users= FirebaseAuth.instance.currentUser;
+  final users = FirebaseAuth.instance.currentUser;
   List<Task> tasks = [];
   late DatabaseReference dbref;
   int editIndex = -1;
@@ -42,28 +41,76 @@ class _HomeState extends State<Home> {
     _descriptionController.clear();
     _dateandtimeController.clear();
   }
- 
-  void navigateToDeletePage(Task task, int index) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DeletePage(
-          title: task.title,
-          description: task.description,
-          dateAndtime: task.dateAndtime,
-        ),
+
+  void navigateToDeletePage(Task task, int index) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete Task'),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Title: ${task.title}'),
+          const SizedBox(height: 8),
+          Text('Description: ${task.description}'),
+          const SizedBox(height: 8),
+          Text('Date & Time: ${task.dateAndtime}'),
+        ],
       ),
-    );
+      actions: [
+        ElevatedButton(
+           onPressed: () {
+            Navigator.pop(context);
+            moveToDeletedTasks(task, index);
+          },
+          child: const Text('Delete'),
+          style: ElevatedButton.styleFrom(primary: Colors.red),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
 
-    if (result == true) {
-      setState(() {
-        tasks.removeAt(index);
-      });
-    }
-
+void moveToDeletedTasks(Task task, int index) {
+   setState(() {
+    tasks.removeAt(index);
     clearFields();
-  }
+  });
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => DeletePage(index: index, task: task),
+    ),
+  ).then((restoredTask) {
+    if (restoredTask != null && restoredTask is Task) {
+      setState(() {
+        tasks.add(restoredTask);
+      });
+}});}
 
+void navigateToDeletedTodos() async {
+  final restoredTask = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => DeletePage(index: -1, task: Task(title: '', description: '', dateAndtime: '')),
+    ),
+  );
+  
+  if (restoredTask != null && restoredTask is Task) {
+    setState(() {
+      tasks.add(restoredTask);
+    });
+  }
+}
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -71,17 +118,35 @@ class _HomeState extends State<Home> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Create your Todo list'),
+          actions: [
+            IconButton(
+               onPressed: navigateToDeletedTodos, // Navigate to DeletePage
+              icon: const Icon(Icons.delete),
+            ),
+          ],
         ),
         drawer: Drawer(
-          child: Column(children: [
-            Text('${users?.email}', style: username,),
-           ElevatedButton(
-                onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
+          backgroundColor: const Color.fromARGB(255, 28, 70, 104),
+          child: Container(
+            margin: const EdgeInsets.only(top: 90.0, left: 25.0, right: 25.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Your Profile', style: profile),
+                const SizedBox(height: 20.0),
+                Text('${users?.email}', style: username),
+                const SizedBox(height: 90.0),
+                ElevatedButton(
+                  onPressed: () {
+                    FirebaseAuth.instance.signOut();
                   },
-                child: const Text('LOGOUT'),
-              ),
-          ],
+                  child: const ListTile(
+                    leading: Icon(Icons.logout),
+                    title: Text('Logout', style: TextStyle(fontSize: 18.0)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         body: SingleChildScrollView(
@@ -171,13 +236,15 @@ class _HomeState extends State<Home> {
                           'description': newTask.description,
                           'dateAndtime': newTask.dateAndtime,
                         });
-    
+
                         clearFields();
                       });
-                      };
-                    },
-                  
+                    }
+                  },
                   child: Text(editIndex != -1 ? 'Save Changes' : 'Create Task'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 28, 70, 104),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -193,7 +260,7 @@ class _HomeState extends State<Home> {
                 const SizedBox(height: 8),
                 ListView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
                     Task task = tasks[index];
@@ -205,7 +272,7 @@ class _HomeState extends State<Home> {
                         children: [
                           IconButton(
                             color: const Color.fromARGB(255, 30, 94, 206),
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             onPressed: () {
                               setState(() {
                                 editIndex = index;
@@ -216,11 +283,11 @@ class _HomeState extends State<Home> {
                             },
                           ),
                           IconButton(
-                            color: Color.fromARGB(255, 214, 31, 18),
-                            icon: Icon(Icons.delete),
+                            color: const Color.fromARGB(255, 214, 31, 18),
+                            icon: const Icon(Icons.delete),
                             onPressed: () {
                              navigateToDeletePage(task, index);
-                              clearFields();
+                             clearFields();
                             },
                           ),
                         ],
@@ -234,5 +301,4 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
-  }
-}
+  }}

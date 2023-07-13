@@ -3,27 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/constants.dart';
 import 'package:todo_app/home.dart';
 
-class DeletePage extends StatefulWidget {
-  final String title;
-  final String description;
-  final String dateAndtime;
+class DeletePage extends StatelessWidget {
+  final Task task;
+  final int index;
 
-  DeletePage({
-    Key? key,
-    required this.title,
-    required this.description,
-    required this.dateAndtime,
-  }) : super(key: key);
+   const DeletePage({required this.index, required this.task,});
 
-  @override
-  State<DeletePage> createState() => _DeleteState();
-}
-
-class _DeleteState extends State<DeletePage> {
-  DatabaseReference reference = FirebaseDatabase.instance.ref().child('todo');
-
-  void deleteTask() {
-    reference.child(widget.title).remove().then((_) {
+  void deleteTask(BuildContext context) {
+    DatabaseReference reference = FirebaseDatabase.instance.ref().child('todo');
+    reference.child(task.title).remove().then((_) {
       // Deletion successful
       Navigator.pop(context, true); // Pass 'true' to indicate successful deletion
     });
@@ -41,41 +29,36 @@ class _DeleteState extends State<DeletePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Title: ${widget.title}',
+              'Title: ${task.title}',
               style: titlestyle,
             ),
             const SizedBox(height: 16),
             Text(
-              'Date & Time: ${widget.dateAndtime}',
+              'Date & Time: ${task.dateAndtime}',
               style: dt,
             ),
             const SizedBox(height: 16),
-            SingleChildScrollView(
-              child: Row(
-                children: [
-                  Text(
-                    'Description: ${widget.description}',
-                    style: descrip,
-                  ),
-                  const SizedBox(width: 35.0),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Restore the task
-                      Navigator.pop(context, Task(
-                        title: widget.title,
-                        description: widget.description,
-                        dateAndtime: widget.dateAndtime,
-                      ));
-                    },
-                    child: Icon(Icons.restart_alt),
-                  ),
-                  const SizedBox(width: 35.0),
-                  ElevatedButton(
-                    onPressed: deleteTask, // Call the deleteTask function
-                    child: Icon(Icons.delete, color: Colors.red),
-                  ),
-                ],
-              ),
+            Text(
+              'Description: ${task.description}',
+              style: descrip,
+            ),
+            const SizedBox(height: 35.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // Restore the task
+                    Navigator.pop(context, task);
+                  },
+                  child: const Icon(Icons.restart_alt),
+                ),
+                ElevatedButton(
+                  onPressed: () => deleteTask(context), // Call the deleteTask function
+                  style: ElevatedButton.styleFrom(primary: Colors.red),
+                  child: const Icon(Icons.delete),
+                ),
+              ],
             ),
           ],
         ),

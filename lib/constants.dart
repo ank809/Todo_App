@@ -23,4 +23,5 @@ const logstyle= TextStyle(color: Colors.white70,
                           fontSize: 16.0);
  const signstyle=TextStyle(color: Colors.white70,
                           fontSize: 16.0);
- const username= TextStyle(color: Colors.black, fontWeight: FontWeight.bold);                                 
+ const username= TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20.0); 
+ const profile= TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize:30.0 );                                
