@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:todo_app/home.dart';
-import 'package:todo_app/constants.dart';
-
 class DeletePage extends StatefulWidget {
   final int index;
   final Task task;
@@ -68,8 +66,12 @@ class _DeletePageState extends State<DeletePage> {
                   Task task = deletedTasks[index];
                   return ListTile(
                     title: Text(task.title),
-                    subtitle: Text(task.dateAndtime),
-                    onTap: () {
+                    subtitle: Text(task.dateAndtime),trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.restore, color: Colors.green,),
+                          onPressed: () {
                       // Restore the task
                       setState(() {
                         deletedTasks.remove(task);
@@ -82,6 +84,19 @@ class _DeletePageState extends State<DeletePage> {
                       });
                       Navigator.pop(context, task); // Return the restored task to the previous screen
                     },
+                        ),
+                         IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red,),
+                          onPressed: () {
+                            // Delete the task permanently
+                            setState(() {
+                              deletedTasks.remove(task);
+                            });
+                            dbRef.child('todo').child(users!.uid).child('deletedTasks').child(task.key).remove();
+                          },
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),

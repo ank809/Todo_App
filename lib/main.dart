@@ -4,7 +4,7 @@ import 'package:todo_app/mainScreen.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/signup.dart';
-import 'login.dart';
+import 'package:todo_app/login.dart';
 const primaryColour=Color.fromARGB(255, 14, 48, 74);
 
 void main() async {
