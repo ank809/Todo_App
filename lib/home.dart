@@ -16,8 +16,14 @@ class Task {
   String title;
   String description;
   String dateAndtime;
+  String key;
 
-  Task({required this.title, required this.description, required this.dateAndtime});
+  Task({
+    required this.title,
+    required this.description,
+    required this.dateAndtime,
+    required this.key,
+  });
 }
 
 class _HomeState extends State<Home> {
@@ -33,7 +39,25 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    dbref = FirebaseDatabase.instance.ref().child('todo');
+    dbref = FirebaseDatabase.instance.reference().child('todo');
+    retrieveTasks();
+  }
+
+  void retrieveTasks() {
+    dbref.child(users!.uid).onValue.listen((event) {
+      final tasksMap = (event.snapshot.value as Map<dynamic, dynamic>?) ?? {};
+      final retrievedTasks = tasksMap.entries
+          .map((entry) => Task(
+                title: entry.value['title'],
+                description: entry.value['description'],
+                dateAndtime: entry.value['dateAndtime'],
+                key: entry.key,
+              ))
+          .toList();
+      setState(() {
+        tasks = retrievedTasks;
+      });
+    });
   }
 
   void clearFields() {
@@ -43,46 +67,54 @@ class _HomeState extends State<Home> {
   }
 
   void navigateToDeletePage(Task task, int index) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Delete Task'),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('Title: ${task.title}'),
-          const SizedBox(height: 8),
-          Text('Description: ${task.description}'),
-          const SizedBox(height: 8),
-          Text('Date & Time: ${task.dateAndtime}'),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Task'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Title: ${task.title}'),
+            const SizedBox(height: 8),
+            Text('Description: ${task.description}'),
+            const SizedBox(height: 8),
+            Text('Date & Time: ${task.dateAndtime}'),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              moveToDeletedTasks(task, index);
+            },
+            child: const Text('Delete'),
+            style: ElevatedButton.styleFrom(primary: Colors.red),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel'),
+          ),
         ],
       ),
-      actions: [
-        ElevatedButton(
-           onPressed: () {
-            Navigator.pop(context);
-            moveToDeletedTasks(task, index);
-          },
-          child: const Text('Delete'),
-          style: ElevatedButton.styleFrom(primary: Colors.red),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Cancel'),
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 
-void moveToDeletedTasks(Task task, int index) {
-   setState(() {
+ void moveToDeletedTasks(Task task, int index) {
+  // Store the deleted task in the "deletedTasks" node in the database
+  dbref.child(users!.uid).child('deletedTasks').push().set({
+    'title': task.title,
+    'description': task.description,
+    'dateAndtime': task.dateAndtime,
+  });
+
+  setState(() {
     tasks.removeAt(index);
     clearFields();
   });
+
   Navigator.push(
     context,
     MaterialPageRoute(
@@ -93,24 +125,72 @@ void moveToDeletedTasks(Task task, int index) {
       setState(() {
         tasks.add(restoredTask);
       });
-}});}
-
-void navigateToDeletedTodos() async {
-  final restoredTask = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => DeletePage(index: -1, task: Task(title: '', description: '', dateAndtime: '')),
-    ),
-  );
-  
-  if (restoredTask != null && restoredTask is Task) {
-    setState(() {
-      tasks.add(restoredTask);
-    });
-  }
+    }
+  });
 }
 
-  
+
+  void navigateToDeletedTodos() async {
+    final restoredTask = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DeletePage(
+          index: -1,
+          task: Task(
+            title: '',
+            description: '',
+            dateAndtime: '',
+            key: '',
+          ),
+        ),
+      ),
+    );
+
+    if (restoredTask != null && restoredTask is Task) {
+      setState(() {
+        tasks.add(restoredTask);
+      });
+    }
+  }
+
+  void createOrUpdateTask() {
+    if (editIndex != -1) {
+      // Update an existing task
+      setState(() {
+        tasks[editIndex].title = _titleController.text;
+        tasks[editIndex].description = _descriptionController.text;
+        tasks[editIndex].dateAndtime = _dateandtimeController.text;
+        String taskKey = tasks[editIndex].key;
+        dbref.child(users!.uid).child(taskKey).update({
+          'title': tasks[editIndex].title,
+          'description': tasks[editIndex].description,
+          'dateAndtime': tasks[editIndex].dateAndtime,
+        });
+        editIndex = -1;
+      });
+      // Clear the fields
+      clearFields();
+    } else {
+      // Create a new task
+      setState(() {
+        Task newTask = Task(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          dateAndtime: _dateandtimeController.text,
+          key: dbref.child(users!.uid).push().key ?? '', // Generate a unique key
+        );
+        tasks.add(newTask);
+        // Store the task in the database
+        dbref.child(users!.uid).child(newTask.key).set({
+          'title': newTask.title,
+          'description': newTask.description,
+          'dateAndtime': newTask.dateAndtime,
+        });
+
+        clearFields();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +200,7 @@ void navigateToDeletedTodos() async {
           title: const Text('Create your Todo list'),
           actions: [
             IconButton(
-               onPressed: navigateToDeletedTodos, // Navigate to DeletePage
+              onPressed: navigateToDeletedTodos, // Navigate to DeletePage
               icon: const Icon(Icons.delete),
             ),
           ],
@@ -204,43 +284,7 @@ void navigateToDeletedTodos() async {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () {
-                    if (editIndex != -1) {
-                      // Update an existing task
-                      setState(() {
-                        tasks[editIndex].title = _titleController.text;
-                        tasks[editIndex].description = _descriptionController.text;
-                        tasks[editIndex].dateAndtime = _dateandtimeController.text;
-                        String taskKey = tasks[editIndex].toString();
-                        dbref.child(taskKey).update({
-                          'title': tasks[editIndex].title,
-                          'description': tasks[editIndex].description,
-                          'dateAndtime': tasks[editIndex].dateAndtime,
-                        });
-                        editIndex = -1;
-                      });
-                      // Clear the fields
-                      clearFields();
-                    } else {
-                      // Create a new task
-                      setState(() {
-                        Task newTask = Task(
-                          title: _titleController.text,
-                          description: _descriptionController.text,
-                          dateAndtime: _dateandtimeController.text,
-                        );
-                        tasks.add(newTask);
-                        // Store the task in the database
-                        dbref.push().set({
-                          'title': newTask.title,
-                          'description': newTask.description,
-                          'dateAndtime': newTask.dateAndtime,
-                        });
-
-                        clearFields();
-                      });
-                    }
-                  },
+                  onPressed: createOrUpdateTask,
                   child: Text(editIndex != -1 ? 'Save Changes' : 'Create Task'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 28, 70, 104),
@@ -278,7 +322,8 @@ void navigateToDeletedTodos() async {
                                 editIndex = index;
                                 _titleController.text = task.title;
                                 _descriptionController.text = task.description;
-                                _dateandtimeController.text = task.dateAndtime;
+                                _dateandtimeController.text =
+                                    task.dateAndtime;
                               });
                             },
                           ),
@@ -286,8 +331,8 @@ void navigateToDeletedTodos() async {
                             color: const Color.fromARGB(255, 214, 31, 18),
                             icon: const Icon(Icons.delete),
                             onPressed: () {
-                             navigateToDeletePage(task, index);
-                             clearFields();
+                              navigateToDeletePage(task, index);
+                              clearFields();
                             },
                           ),
                         ],
@@ -301,4 +346,5 @@ void navigateToDeletedTodos() async {
         ),
       ),
     );
-  }}
+  }
+}

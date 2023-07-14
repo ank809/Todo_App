@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:todo_app/home.dart';
+
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
 
@@ -10,56 +11,64 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final emailController= TextEditingController();
-  final passwordController= TextEditingController();
-  bool isPasswordvisible=false;
-    @override
-  void dispose(){
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool isPasswordVisible = false;
+
+  @override
+  void dispose() {
     emailController.clear();
     passwordController.clear();
     super.dispose();
   }
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
-final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-Future<UserCredential> signInWithGoogle() async {
-  final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-  final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+  Future<UserCredential> signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser!.authentication;
 
-  final OAuthCredential credential = GoogleAuthProvider.credential(
-    accessToken: googleAuth.accessToken,
-    idToken: googleAuth.idToken,
-  );
+    final OAuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
 
-  final UserCredential userCredential = await _auth.signInWithCredential(credential);
-  return userCredential;
-}
+    final UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+    return userCredential;
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if(snapshot.hasData){
+        if (snapshot.hasData) {
           return Home();
-        }
-        else{
-        return Scaffold(
-            appBar: AppBar(title: const Text('Welcome',
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Welcome',
                 style: TextStyle(fontSize: 25.0),
               ),
             ),
             body: SingleChildScrollView(
               child: Container(
-                margin: EdgeInsets.all(8.0),
+                margin: const EdgeInsets.all(8.0),
                 child: Column(
                   children: [
-                    Image(image: AssetImage('Asset/Image/login.png'),
-                    width: 400.0,
-                    height: 300.0, ), 
-                    SizedBox(height: 20.0,),
+                    Image(
+                      image: AssetImage('Asset/Image/login.png'),
+                      width: 400.0,
+                      height: 300.0,
+                    ),
+                    const SizedBox(height: 20.0),
                     Container(
                       alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.only(left: 2.0),
+                      margin: const EdgeInsets.only(left: 2.0),
                       child: const Text(
                         'Log In',
                         style: TextStyle(
@@ -69,10 +78,10 @@ Future<UserCredential> signInWithGoogle() async {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     Container(
-                      padding: EdgeInsets.only(right: 10.0, left: 10.0),
-                      child:  TextField(
+                      padding: const EdgeInsets.only(right: 10.0, left: 10.0),
+                      child: TextField(
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
@@ -85,77 +94,101 @@ Future<UserCredential> signInWithGoogle() async {
                     ),
                     const SizedBox(height: 30.0),
                     Container(
-                      padding: EdgeInsets.only(right: 10.0, left: 10.0),
-                      child:  TextField(
+                      padding: const EdgeInsets.only(right: 10.0, left: 10.0),
+                      child: TextField(
                         controller: passwordController,
-                        obscureText: !isPasswordvisible,
+                        obscureText: !isPasswordVisible,
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           labelText: 'Password',
                           prefixIcon: IconButton(
-                            onPressed: (){
+                            onPressed: () {
                               setState(() {
-                                isPasswordvisible=!isPasswordvisible;
+                                isPasswordVisible = !isPasswordVisible;
                               });
-                            }, 
-                          icon: Icon(
-                              isPasswordvisible ? Icons.visibility : Icons.visibility_off,
+                            },
+                            icon: Icon(
+                              isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
-                         ),
+                          ),
                           focusedBorder: OutlineInputBorder(),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20.0, ),
+                    const SizedBox(height: 20.0),
                     Container(
-                    margin: EdgeInsets.only(right: 80.0, left: 80.0),
-                    child: Row(
-                      children: [
-                        Expanded(child: Divider(thickness: 2.0,color: Color.fromARGB(255, 49, 43, 43),)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal:8.0),
-                          child: Text('OR', 
-                          style: TextStyle(fontSize: 20.0, ),),
-                        ),
-                        Expanded(child: Divider(thickness:2.0,color: const Color.fromARGB(255, 31, 30, 30),)),
-                      ],
+                      margin: const EdgeInsets.only(right: 80.0, left: 80.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              thickness: 2.0,
+                              color: Color.fromARGB(255, 49, 43, 43),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: const Text(
+                              'OR',
+                              style: TextStyle(fontSize: 20.0),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              thickness: 2.0,
+                              color: const Color.fromARGB(255, 31, 30, 30),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                    const SizedBox(height: 20.0, ),
+                    const SizedBox(height: 20.0),
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(300.0, 50.0),
                       ),
-                      onPressed: (){
+                      onPressed: () {
                         signInWithGoogle();
                       },
-                      icon: Image(image: AssetImage('Asset/Image/google.png'),width: 35.0,),
-                      label: Text('Continue with Google',
-                      style: TextStyle(fontSize: 20.0),
+                      icon: Image(
+                        image: AssetImage('Asset/Image/google.png'),
+                        width: 35.0,
                       ),
+                      label: Text(
+                        'Continue with Google',
+                        style: TextStyle(fontSize: 20.0),
                       ),
-                    const SizedBox(height: 20.0, ),
-                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: Size(150, 40),
-                      backgroundColor: const Color.fromARGB(255, 15, 52, 82),
                     ),
-                    onPressed: (){
-                     FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: emailController.text.trim(), 
-                      password: passwordController.text.trim(),
-                     
-                      );
-                       Navigator.pushNamed(context, '/home');
-                      dispose();
-                    }, 
-                   child:Text('Login'.toUpperCase(),
-                   style: TextStyle(fontSize: 20.0),),
-                   
+                    const SizedBox(height: 20.0),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(150, 40),
+                        backgroundColor: const Color.fromARGB(255, 15, 52, 82),
+                      ),
+                      onPressed: () async {
+                        try {
+                          await FirebaseAuth.instance
+                              .signInWithEmailAndPassword(
+                            email: emailController.text.trim(),
+                            password: passwordController.text.trim(),
+                          );
+                          Navigator.pushNamed(context, '/home');
+                          dispose();
+                        } catch (e) {
+                          print('Error logging in: $e');
+                        }
+                      },
+                      child: Text(
+                        'Login'.toUpperCase(),
+                        style: TextStyle(fontSize: 20.0),
+                      ),
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     Container(
-                      margin: EdgeInsets.only(left: 50.0),
+                      margin: const EdgeInsets.only(left: 50.0),
                       child: Row(
                         children: [
                           const Text(
@@ -173,14 +206,14 @@ Future<UserCredential> signInWithGoogle() async {
                           ),
                         ],
                       ),
-                    ), 
+                    ),
                   ],
                 ),
               ),
             ),
           );
-      }
-      }
+        }
+      },
     );
-    }
   }
+}

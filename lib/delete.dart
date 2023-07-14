@@ -1,19 +1,44 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:todo_app/constants.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:todo_app/home.dart';
+import 'package:todo_app/constants.dart';
 
-class DeletePage extends StatelessWidget {
-  final Task task;
+class DeletePage extends StatefulWidget {
   final int index;
+  final Task task;
 
-   const DeletePage({required this.index, required this.task,});
+  const DeletePage({required this.index, required this.task});
 
-  void deleteTask(BuildContext context) {
-    DatabaseReference reference = FirebaseDatabase.instance.ref().child('todo');
-    reference.child(task.title).remove().then((_) {
-      // Deletion successful
-      Navigator.pop(context, true); // Pass 'true' to indicate successful deletion
+  @override
+  _DeletePageState createState() => _DeletePageState();
+}
+
+class _DeletePageState extends State<DeletePage> {
+  final dbRef = FirebaseDatabase.instance.reference();
+  final users = FirebaseAuth.instance.currentUser;
+  List<Task> deletedTasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    retrieveDeletedTasks();
+  }
+
+  void retrieveDeletedTasks() {
+    dbRef.child('todo').child(users!.uid).child('deletedTasks').onValue.listen((event) {
+      final tasksMap = (event.snapshot.value as Map<dynamic, dynamic>?) ?? {};
+      final retrievedDeletedTasks = tasksMap.entries
+          .map((entry) => Task(
+                title: entry.value['title'],
+                description: entry.value['description'],
+                dateAndtime: entry.value['dateAndtime'],
+                key: entry.key,
+              ))
+          .toList();
+      setState(() {
+        deletedTasks = retrievedDeletedTasks;
+      });
     });
   }
 
@@ -21,44 +46,45 @@ class DeletePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Delete Task'),
+        title: const Text('Deleted Tasks'),
       ),
       body: Container(
         margin: const EdgeInsets.all(25.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Title: ${task.title}',
-              style: titlestyle,
+            const Text(
+              'Deleted Tasks:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Date & Time: ${task.dateAndtime}',
-              style: dt,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Description: ${task.description}',
-              style: descrip,
-            ),
-            const SizedBox(height: 35.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Restore the task
-                    Navigator.pop(context, task);
-                  },
-                  child: const Icon(Icons.restart_alt),
-                ),
-                ElevatedButton(
-                  onPressed: () => deleteTask(context), // Call the deleteTask function
-                  style: ElevatedButton.styleFrom(primary: Colors.red),
-                  child: const Icon(Icons.delete),
-                ),
-              ],
+            Expanded(
+              child: ListView.builder(
+                itemCount: deletedTasks.length,
+                itemBuilder: (context, index) {
+                  Task task = deletedTasks[index];
+                  return ListTile(
+                    title: Text(task.title),
+                    subtitle: Text(task.dateAndtime),
+                    onTap: () {
+                      // Restore the task
+                      setState(() {
+                        deletedTasks.remove(task);
+                      });
+                      dbRef.child('todo').child(users!.uid).child('deletedTasks').child(task.key).remove();
+                      dbRef.child('todo').child(users!.uid).child(task.key).set({
+                        'title': task.title,
+                        'description': task.description,
+                        'dateAndtime': task.dateAndtime,
+                      });
+                      Navigator.pop(context, task); // Return the restored task to the previous screen
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

@@ -1,5 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:todo_app/delete.dart';
 import 'package:todo_app/home.dart';
 import 'package:todo_app/mainScreen.dart';
 import 'firebase_options.dart';
