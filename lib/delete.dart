@@ -13,7 +13,7 @@ class DeletePage extends StatefulWidget {
 }
 
 class _DeletePageState extends State<DeletePage> {
-  final dbRef = FirebaseDatabase.instance.reference();
+  final dbRef = FirebaseDatabase.instance.ref();
   final users = FirebaseAuth.instance.currentUser;
   List<Task> deletedTasks = [];
 

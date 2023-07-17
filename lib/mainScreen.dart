@@ -20,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
                 Container(
                   height: 180.0,
                   width: 180.0,
-                  child: Image(image: 
+                  child:const Image(image: 
                   AssetImage('Asset/Image/yellow.png'),
                   ),
                 ),
@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
                 Column(
                   children: [
                     Image.asset('Asset/Image/main.png'),
-                    SizedBox(height: 50.0,),
+                   const SizedBox(height: 50.0,),
                     Container(
                       margin: EdgeInsets.only(left:40.0),
                       child: Row(
@@ -36,15 +36,15 @@ class _MainScreenState extends State<MainScreen> {
                           ElevatedButton(onPressed: (){
                             Navigator.pushNamed(context, '/login');
                           }, 
-                          child:  Text('LOGIN',
+                          child: Text('LOGIN',
                           style: logstyle,),
                           style: mainbuttonlogin,
                           ),
-                          SizedBox(width: 90.0,),
+                          const SizedBox(width: 90.0,),
                           ElevatedButton(onPressed: (){
                             Navigator.pushNamed(context, '/sign');
                           }, 
-                          child: Text('SIGNUP',
+                          child:  Text('SIGNUP',
                           style: signstyle,),
                           style: mainbuttonsignup,
                           ),
