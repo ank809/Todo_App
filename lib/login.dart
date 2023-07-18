@@ -40,6 +40,30 @@ class _LoginState extends State<Login> {
     return userCredential;
   }
 
+  Future<void> sendEmailVerification() async {
+    final User? user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Email Verification'),
+          content: Text(
+            'A verification email has been sent to ${user.email}. Please verify your email before logging in.',
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -95,7 +119,7 @@ class _LoginState extends State<Login> {
                     const SizedBox(height: 30.0),
                     Container(
                       padding: const EdgeInsets.only(right: 10.0, left: 10.0),
-                      child: TextField(
+                      child: TextFormField(
                         controller: passwordController,
                         obscureText: !isPasswordVisible,
                         decoration: InputDecoration(
@@ -120,7 +144,7 @@ class _LoginState extends State<Login> {
                     const SizedBox(height: 20.0),
                     Container(
                       margin: const EdgeInsets.only(right: 80.0, left: 80.0),
-                      child: Row(
+                      child: const Row(
                         children: [
                           Expanded(
                             child: Divider(
@@ -131,7 +155,7 @@ class _LoginState extends State<Login> {
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: const Text(
+                            child: Text(
                               'OR',
                               style: TextStyle(fontSize: 20.0),
                             ),
@@ -139,7 +163,7 @@ class _LoginState extends State<Login> {
                           Expanded(
                             child: Divider(
                               thickness: 2.0,
-                              color: const Color.fromARGB(255, 31, 30, 30),
+                              color: Color.fromARGB(255, 31, 30, 30),
                             ),
                           ),
                         ],
@@ -153,11 +177,11 @@ class _LoginState extends State<Login> {
                       onPressed: () {
                         signInWithGoogle();
                       },
-                      icon: Image(
+                      icon: const Image(
                         image: AssetImage('Asset/Image/google.png'),
                         width: 35.0,
                       ),
-                      label: Text(
+                      label: const Text(
                         'Continue with Google',
                         style: TextStyle(fontSize: 20.0),
                       ),
@@ -175,11 +199,36 @@ class _LoginState extends State<Login> {
                             email: emailController.text.trim(),
                             password: passwordController.text.trim(),
                           );
-                          Navigator.pushNamed(context, '/home');
+                          if (emailController.text.isNotEmpty &&
+                              passwordController.text.length > 8) {
+                            await sendEmailVerification();
+                            Navigator.pushNamed(context, '/home');
+                          }
                           dispose();
-                        } catch (e) {
-                          print('Error logging in: $e');
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'wrong-password') {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Login Error'),
+                                content: Text(
+                                  'The password entered is incorrect. Please try again.',
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            print('Error logging in: $e');
+                          }
                         }
+                        passwordController.clear();
                       },
                       child: Text(
                         'Login'.toUpperCase(),
